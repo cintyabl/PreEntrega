@@ -1,0 +1,1 @@
+export const ESPERA = 11000;
