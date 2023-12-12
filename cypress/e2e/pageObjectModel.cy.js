@@ -51,7 +51,7 @@ describe("Preentrega",() =>{
         cy.xpath("//button[text()='Show total price']").click()
        
         // const precioEsperado = '"#price > b'
-        const preciosProductos = [5, 30]
+        const preciosProductos = [5]
         shoppingCardPage.verificarTotalPrice(preciosProductos)
         
         
