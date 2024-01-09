@@ -6,8 +6,8 @@ import { HomePage } from "../support/pages/homePage"
 import {ProductPage} from "../support/pages/productPage"
 import {ShoppingCardPage} from "../support/pages/shoppingCardPage"
 
-describe("Preentrega",() =>{
-    let datos
+describe("Entrega",() =>{
+     let datos
     const loginPage = new LoginPage()
     const registerPage = new RegisterPage()
     const homePage = new HomePage()
@@ -19,6 +19,7 @@ describe("Preentrega",() =>{
             datos=data
         })
     })
+    
     beforeEach("Login", ()=>{
         cy.visit('')
         registerPage.escribirRegistroUsuario(Cypress.env().usuario)
@@ -35,37 +36,25 @@ describe("Preentrega",() =>{
         loginPage.clickLogin()
         homePage.clickOnlineShopButton()
     })
-
+    
     it('Agregar dos productos al Carrito', () => {
         productPage.AgregarProducto(datos.product1.name)
         productPage.AgregarProducto(datos.product2.name)
         
     })
 
-    it.only("Verificar el nombre y precio de los dos productos agregados", () => {
+    it("Verificar el nombre y precio de los dos productos agregados", () => {
         productPage.AgregarProducto(datos.product1.name)
         productPage.AgregarProducto(datos.product2.name)
         cy.get("#goShoppingCart").click()
         shoppingCardPage.verificarPrecio(datos.product1.name, datos.product1.price)
         shoppingCardPage.verificarNombre(datos.product1.price, datos.product1.name)
         cy.xpath("//button[text()='Show total price']").click()
-       
-        // const precioEsperado = '"#price > b'
-        const preciosProductos = [5]
-        shoppingCardPage.verificarTotalPrice(preciosProductos)
-        
-        
-        // shoppingCartPage.VerificarNombre('[value="Black T-Shirt"]', 'Black T-Shirt')
-        
-    
-        // cy.get("#productPrice").should('text',"15")
-        // cy.get('[value="White Pants"]').should('text',"White Pants")
-        // cy.get("#productPrice").should('text',"20")
+        const productos = [
+            { nombre: 'Black T-Shirt', precio: 15 },
+            { nombre: 'White Pants', precio: 20 }
+           ]
+        shoppingCardPage.verificarTotalPrice(productos)
     })
-
-    // it.skip("Hacer click en Show total price y verificar el precio acumulado de los 2 productos", () =>{
-    //     cy.get('.chakra-button css-15tuzzq').click()
-    //     cy.get("#price").children('b').should('text',"35")
-    // })
 })
 
