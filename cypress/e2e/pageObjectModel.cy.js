@@ -5,67 +5,98 @@ import { RegisterPage } from "../support/pages/registerPage"
 import { HomePage } from "../support/pages/homePage"
 import {ProductPage} from "../support/pages/productPage"
 import {ShoppingCardPage} from "../support/pages/shoppingCardPage"
+import { CheckOutPage } from "../support/pages/checkOutPage"
+import { ReciptPage } from "../support/pages/reciptPage"
 
 describe("Preentrega",() =>{
+    const usuario = Math.floor(Math.random()*100)
     let datos
+    let datosCheckout
     const loginPage = new LoginPage()
     const registerPage = new RegisterPage()
     const homePage = new HomePage()
     const productPage = new ProductPage()
     const shoppingCardPage = new ShoppingCardPage()
+    const checkOutPage = new CheckOutPage()
+    const reciptPage = new ReciptPage()
 
     before( "Datos", ()=>{
         cy.fixture("datosFixture").then(data =>{
             datos=data
         })
+        cy.fixture("checkoutFixture").then(dataCheckout=>{
+            datosCheckout= dataCheckout
+        })
     })
-    beforeEach("Login", ()=>{
+    
+    it('Register, Login, Delete ' ,()=> {
+        cy.request({
+            url: "https://pushing-it.onrender.com/api/register",
+            method: "POST",
+            body :{
+                "username": usuario,
+                "password": "12345!",
+                "gender":"male",
+                "day":"8",
+                "month":"4",
+                "year":"1997",
+            }
+        }).then((respuesta) => {
+            expect(respuesta.status).to.be.equal(201);
+           
+        })
+        cy.request({
+            url: "https://pushing-it.onrender.com/api/login",
+            method: "POST",
+            body :{
+                "username": usuario,
+                "password": "12345!",
+            }
+        }).then(respuesta => {
+            cy.log(respuesta)
+            window.localStorage.setItem('token', respuesta.body.token)
+            window.localStorage.setItem('user', respuesta.body.user.username)
+        })
         cy.visit('')
-        registerPage.escribirRegistroUsuario(Cypress.env().usuario)
-        registerPage.escribirRegistroContraseña(Cypress.env().contraseña)
-        registerPage.selectGender()
-        registerPage.selectDay("3")
-        registerPage.selectMonth("July")
-        registerPage.selectYear("1997")
-        cy.get("#registertoggle").dblclick()
-        cy.get('#user').clear()
-        loginPage.escribirUsuario(Cypress.env().usuario)
-        cy.get('#pass').clear()
-        loginPage.escribirContraseña(Cypress.env().contraseña)
-        loginPage.clickLogin()
         homePage.clickOnlineShopButton()
-    })
-
-    it('Agregar dos productos al Carrito', () => {
         productPage.AgregarProducto(datos.product1.name)
         productPage.AgregarProducto(datos.product2.name)
-        
-    })
 
-    it.only("Verificar el nombre y precio de los dos productos agregados", () => {
-        productPage.AgregarProducto(datos.product1.name)
-        productPage.AgregarProducto(datos.product2.name)
         cy.get("#goShoppingCart").click()
         shoppingCardPage.verificarPrecio(datos.product1.name, datos.product1.price)
         shoppingCardPage.verificarNombre(datos.product1.price, datos.product1.name)
         cy.xpath("//button[text()='Show total price']").click()
-       
-        // const precioEsperado = '"#price > b'
-        const preciosProductos = [5]
-        shoppingCardPage.verificarTotalPrice(preciosProductos)
+        const productos = [
+            { nombre: 'Black T-Shirt', precio: 15 },
+            { nombre: 'White Pants', precio: 20 }
+           ]
+        shoppingCardPage.verificarTotalPrice(productos)
+        cy.contains('button', 'Go to Checkout').click()
+        checkOutPage.escribirFirstName(datosCheckout.nombre)
+        checkOutPage.escribirLastName(datosCheckout.apellido)
+        checkOutPage.escribirCardNumber(datosCheckout.numberCard)
+        checkOutPage.clickPurchaseButton()
         
+        reciptPage.verificarDatosRecipt(datosCheckout.nombre)
+        reciptPage.verificarDatosRecipt(datosCheckout.apellido)
+        reciptPage.verificarDatosRecipt(datosCheckout.numberCard)
+        reciptPage.verificarDatosRecipt(datos.product1.name)
+        reciptPage.verificarDatosRecipt(datos.product2.name)
+        let precioTotalRecipt = 35
+        reciptPage.verificarDatosRecipt(precioTotalRecipt)
+        cy.contains('button', 'Thank you').click()
         
-        // shoppingCartPage.VerificarNombre('[value="Black T-Shirt"]', 'Black T-Shirt')
-        
-    
-        // cy.get("#productPrice").should('text',"15")
-        // cy.get('[value="White Pants"]').should('text',"White Pants")
-        // cy.get("#productPrice").should('text',"20")
-    })
 
-    // it.skip("Hacer click en Show total price y verificar el precio acumulado de los 2 productos", () =>{
-    //     cy.get('.chakra-button css-15tuzzq').click()
-    //     cy.get("#price").children('b').should('text',"35")
-    // })
+        
+    })
+    after("Delete Usuario",() =>{
+        cy.request({
+            method: "DELETE",
+            url: `https://pushing-it.onrender.com/api/deleteuser/${usuario}`,
+        }).then(respuesta => {
+            expect(respuesta.status).to.be.equal(202);
+        })
+        cy.contains('button','Logout').click()
+    })
 })
 
