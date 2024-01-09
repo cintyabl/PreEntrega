@@ -1,7 +1,6 @@
 ///<reference types ="cypress"/>
 const constantes = require('../support/constantes')
-import {LoginPage } from "../support/pages/loginPage"
-import { RegisterPage } from "../support/pages/registerPage"  
+
 import { HomePage } from "../support/pages/homePage"
 import {ProductPage} from "../support/pages/productPage"
 import {ShoppingCardPage} from "../support/pages/shoppingCardPage"
@@ -12,8 +11,6 @@ describe("Preentrega",() =>{
     const usuario = Math.floor(Math.random()*100)
     let datos
     let datosCheckout
-    const loginPage = new LoginPage()
-    const registerPage = new RegisterPage()
     const homePage = new HomePage()
     const productPage = new ProductPage()
     const shoppingCardPage = new ShoppingCardPage()
